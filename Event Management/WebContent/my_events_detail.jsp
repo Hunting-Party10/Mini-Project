@@ -1,3 +1,4 @@
+<%@page import="com.sun.tools.javac.util.Context"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
     <%@page import="com.DataBaseConnection.GetConnection"%>
@@ -9,6 +10,7 @@
     <%@page import="java.sql.*"%>
     <%@ taglib uri = "http://java.sun.com/jsp/jstl/core" prefix = "c" %>
     
+ <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
  
     
 
@@ -25,8 +27,7 @@
     <!-- Bootstrap CSS-->
     <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css">
     <!-- Font Awesome CSS-->
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
-    <!-- Google fonts - Popppins for copy-->
+	<link rel="stylesheet" href="css/font.css">    <!-- Google fonts - Popppins for copy-->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,800">
     <!-- orion icons-->
     <link rel="stylesheet" href="css/orionicons.css">
@@ -35,7 +36,13 @@
     <!-- Custom stylesheet - for your changes-->
     <link rel="stylesheet" href="css/custom.css">
     <!-- Favicon-->
+    <link href="css/icon.css" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="shortcut icon" href="img/logo.png">
+     <script src="https://kit.fontawesome.com/e7282b0417.js" crossorigin="anonymous"></script>
+     
   </head>
   <body>
 		  <%
@@ -50,6 +57,12 @@
 			{
 				response.sendRedirect("Login.jsp");
 			}
+			
+			/* if(request.getParameter("btn") == null)
+			{
+				response.sendRedirect("DashBoard.jsp");
+			} */
+			
 		
 		%>
     <!-- navbar-->
@@ -60,7 +73,7 @@
         <a href="index.html"><img src="img/logo.png" style="width:50px; height:40px;"></a>
 
         <!-- For Side Bar Toggle -->
-        <!-- <a href="#" class="sidebar-toggler text-gray-500 mr-4 mr-lg-5 lead"><i class="fas fa-align-left"></i></a> -->
+       <a href="#" class="sidebar-toggler text-gray-500 mr-4 mr-lg-5 lead"><i class="fas fa-align-left ml-2"></i></a> 
 
         <a href="#" class="navbar-brand font-weight-bold text-uppercase text-base "><font size="4.6">Welcome  ${username} </font>  </a>
         <ul class="ml-auto d-flex align-items-center list-unstyled mb-0">
@@ -102,6 +115,7 @@
         </ul>
       </nav>
     </header>
+
     <div class="d-flex align-items-stretch">
 
       <!-----Side-Bar--------------------------------------------------------------------------------------------->
@@ -125,6 +139,85 @@
 
       <!-----Center-Content--------------------------------------------------------------------------------------------->
 
+	<%
+            	Connection con 		 = null;
+              	PreparedStatement st = null;
+            	ResultSet rs_1 		 = null;
+            	ResultSet rs_2 		 = null;
+          
+             	
+            	try
+            	{
+            		
+            		String username =(String)session.getAttribute("username");
+            		
+            		String sql_1 = "select * from event_ledger join misc_ledger using(event_id) where event_id = ?";
+            		
+            		String if_join_fails = "select * from event_ledger  where event_id = ?";
+            		
+            		String sql_2 = "select * from users where username  = ? ";
+            		
+            		String value = request.getParameter("btn");   // calling from DashBoard.java to this 
+            		
+            		if(value == null)
+            		{
+            			// calling from user_to_principal.java to this 
+            			
+            			/* ServletContext sc = request.getServletContext();
+            			value = (String)sc.getAttribute("event_id"); */
+            			
+            			value = (String)session.getAttribute("event_id_1");	
+            			
+            		}
+            		
+            		
+            		boolean join_fail = false;
+            		
+            		int id = Integer.parseInt(value);
+            		
+            		con = (Connection) GetConnection.getConnection();
+            		
+            		st = con.prepareStatement(sql_1);
+            		
+            		st.setInt(1, id);
+            		
+            		rs_1 = st.executeQuery();
+            		
+            		st = null;
+            		
+            		st = con.prepareStatement(sql_2);
+            		
+            		st.setString(1 ,username);
+            		
+            		rs_2 = st.executeQuery();
+            		
+            		String event_id =null;
+            		
+            		session.setAttribute("event_id", value);
+            		
+            		if(!rs_1.absolute(1))
+            		{
+            			join_fail = true;
+            			
+            			st = con.prepareStatement(if_join_fails);
+                		
+                		st.setInt(1, id);
+                		
+                		rs_1 = st.executeQuery();
+                		
+            			
+            		}
+            		  rs_2.next();
+            		  int c = 1;
+            		  if(join_fail)
+            		  {
+            			  rs_1.next();	
+            		  }
+            		do/* ( (rs_1.next())) */
+            		{
+            	%>
+            	
+
       <div class="page-holder w-100 d-flex flex-wrap">
         <div class="container-fluid px-xl-5">
 
@@ -139,109 +232,397 @@
 
                     <div class="card-body">
 					<%
-                      		Connection con = null;
-                      		PreparedStatement st  = null;
-                      		ResultSet rs  = null;
-		                
-		                   	
-		                  	try
-		                  	{
-		                  		/* String sql = "select * from event_ledger where event_id= ? ";
-		                  		con = (Connection) GetConnection.getConnection();
-		                  		st = con.prepareStatement(sql); */
-		                  		/*  String Username =(String)session.getAttribute("username");*/
-		                  		String Event_id = (request.getParameter("view")); 
-		                  		out.print("id is :_---------------------------"+session.getAttribute("id"));
-		                  		
-		                  		
-		                  		/* st.setString(1,Username);
-		                  		rs = st.executeQuery(); */
-		                  		
-		                  			
-		                  %>
-		                  			
-		                  	
-		                  		
-		                  <% 	
-		                  		
-		                  		
-		                  	}
-		                  	catch(Exception ex)
-		                  	{
-		                  		out.print(ex);
-		                  	}
-                  	
-                 	 %>                      <h5><span>Approved/Rejected</span> By</h5>
+						if( rs_1.getInt(5) >= 3)
+						{
+					
+					%>
+           
+           				<h5><span>Approved by Principal </span> </h5>
+          		  <% 
+						}
+						else if( rs_1.getInt(5) == 2) {
+						
+                   %>
+           				  <h5><span>Rejected by Principal</span> </h5>
+           				  <%} else  { %>
+           				  
+           				  <h5><span>Waiting for Principal Response</span></h5>
+           				  <%} %>
+           				  
+           		
                       <br>
-                      <p>Head Organiser</p>
-                      <p>Event Description</p>
-                      <p>Start Date</p>
-                      <p>End Date</p>
-                      <br>
+                      <div class="row">
+                      <div class="col-md-12">
+                        <div class="row py-3">
+                          <div class="col-md-2">Head Organiser</div>
+                          <div class="col-md-1">:</div>
+                          <div class="col-md-9"><i><%= rs_2.getString(4)  %></i></div>
+                        </div>
+                        <div class="row py-3">
+                          <div class="col-md-2">Start Date</div>
+                          <div class="col-md-1">:</div>
+                          <div class="col-md-9"><i><%= rs_1.getDate(7)  %></i></div>
+                        </div>
+                        <div class="row py-3">
+                          <div class="col-md-2">End Date</div>
+                          <div class="col-md-1">: </div>
+                          <div class="col-md-9"><i><%= rs_1.getDate(8)  %></i></div>
+                        </div>
+                        <div class="row py-3">
+                          <div class="col-md-2">Event Description</div>
+                          <div class="col-md-1">:</div>
+                          <div class="col-md-9"><i><%= rs_1.getString(3)  %></i></div>
+                        </div>
+					
+						<%
+						if( rs_1.getInt(5) >= 3 )
+						{
+					
+					%>
+           				 <div class="row py-3">
+                          <div class="col-md-2">Flex Start Date : </div>
+                          <div class="col-md-1">:</div>
+                          <% if (!join_fail){ %>
+                          <div class="col-md-9 d-inline""><i><%= rs_1.getDate(10)  %></i>
+                         <% if (  rs_1.getInt(12) == 3 ){ %>
+                         	<div class="col-md -12 d-inline my-5 ml-lg-0"><i class="fa fa-check-circle fa-2x" aria-hidden="true"  ></i></div>
+                         <%} else { %>
+                         	<div class="col-md -12 d-inline my-5 ml-lg-0">  <i class="fas fa-sync fa-spin"></i></div> 	
+                         <%} %>
+                          </div>
+                          
+                          <%} else {%>
+                          			-
+                          	<%} %>
+                        </div>
+                        
+                        <div class="row py-3">
+                          <div class="col-md-2">Flex End Date : </div>
+                          <div class="col-md-1">:</div>
+                          <% if (!join_fail){ System.out.print("O-----join-------" ); %>
+                          <div class="col-md-9 d-inline"><i><%= rs_1.getDate(13)  %></i>
+                         <% if (  rs_1.getInt(12) == 3 ){  %>
+                         	<div class="col-md -12 d-inline my-5 ml-lg-0"><i class="fa fa-check-circle fa-2x" aria-hidden="true"  ></i></div>
+                         <%} else { 
+                        	 System.out.println("O------------" );
+                        	 System.out.println(rs_1.getInt(1));
+                        	 System.out.println(rs_1.getString(2));
+                        	 System.out.println(rs_1.getString(3));
+                        	 System.out.println(rs_1.getString(4));
+                        	 System.out.println(rs_1.getInt(5));
+                        	 System.out.println(rs_1.getInt(6));
+                        	 System.out.println(rs_1.getDate(7));
+                        	 System.out.println(rs_1.getDate(8));
+                        	 System.out.println(rs_1.getInt(9));
+                        	 System.out.println(rs_1.getDate(10));
+                        	 System.out.println(rs_1.getString(11));
+                        	 System.out.println(rs_1.getInt(12) ); 
+                        	 System.out.print(rs_1.getDate(13));%>
+                         	<div class="col-md -12 d-inline my-5 ml-lg-0">  <i class="fas fa-sync fa-spin"></i></div> 	
+                         <%} %>
+                          </div>
+                          
+                          <%} else {%>
+                          			-
+                          	<%} %>
+                        </div>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <div class="row py-3">
+                          <div class="col-md-2">Publicity Start Date : </div>
+                          <div class="col-md-1">:</div>
+                          <% if (!join_fail){  System.out.print(rs_1.getInt(9) );%>
+                          <div class="col-md-9 d-inline""><i><%= rs_1.getDate(10)  %></i>
+                         <% if(c == 1){ 
+                         		rs_1.next();
+                         		c++;
+                         		System.out.print("ODDDDDDDDDDDDDDDD " );
+                         		System.out.print(rs_1.getInt(9) );
+                         		
+                         	}
+                         	if (  rs_1.getInt(12) == 3 ){ %>
+                         	<div class="col-md -12 d-inline my-5 ml-lg-0"><i class="fa fa-check-circle fa-2x" aria-hidden="true"  ></i></div>
+                         <%} else { %>
+                         	<div class="col-md -12 d-inline my-5 ml-lg-0">  <i class="fas fa-sync fa-spin"></i></div> 	
+                         <%} %>
+                          </div>
+                          
+                          <%} else {%>
+                          			-
+                          	<%} %>
+                        </div>
+                        
+                        <div class="row py-3">
+                          <div class="col-md-2">Publicity End Date : </div>
+                          <div class="col-md-1">:</div>
+                          <% if (!join_fail){ %>
+                          <div class="col-md-9 d-inline""><i><%= rs_1.getDate(13)  %></i>
+                         <% if (  rs_1.getInt(12) == 3 ){ %>
+                         	<div class="col-md -12 d-inline my-5 ml-lg-0"><i class="fa fa-check-circle fa-2x" aria-hidden="true"  ></i></div>
+                         <%} else if (  rs_1.getInt(12) == 2){ %>
+                         	haha	
+                         <%} else {%>
+                         	<div class="col-md -12 d-inline my-5 ml-lg-0">  <i class="fas fa-sync fa-spin"></i></div> 	
+                         <%} %>
+                          </div>
+                          
+                          <%} else {%>
+                          			-
+                          	<%} %>
+                        </div>
+                        
+                        
+                           <div class="row py-3">
+                        	<form action="room_selection.jsp">
+           						<button type="submit" class="btn-sm btn-success mx-3" >ClassRoom Selection</button>
+           				    </form> 
+           				   
+           				        <button type="button" data-toggle="modal" data-target="#myModal1" class="btn-sm btn-info mx-3">Flex Permission</button>
+                            <div id="myModal1" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
+                            <div role="document" class="modal-dialog modal-lg">
+                              <div class="modal-content">
 
-                      <button type="button" data-toggle="modal" data-target="#myModal1" class="btn-sm btn-info">Message</button>
-                      <div id="myModal1" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
-                        <div role="document" class="modal-dialog modal-lg">
-                          <div class="modal-content">
-
-                            <div class="modal-header">
-                              <h4 id="exampleModalLabel" class="modal-title">Messaging</h4>
-                              <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true">×</span></button>
-                            </div>
-
-                            <div class="modal-body">
-                              <form action="#">
-                                <br>
-                                <div class="form-group">
-                                  <label>Message</label>
-                                  <textarea type="textarea" class="form-control"></textarea>
+                                <div class="modal-header">
+                                  <h4 id="exampleModalLabel" class="modal-title">Event Name</h4>
+                                  <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true">×</span></button>
                                 </div>
 
-                                <div class="form-group">
-                                  <input type="submit" value="Close" class="btn btn-default" data-dismiss="modal">
-                                  <input type="submit" value="Send" class="btn btn-primary">
-                                </div>
-                              </form>
+                                <div class="modal-body">
+                                  <p>Request for granting permission to put flex in college </p>
 
-                              <section class="py-2"></section>
-
-                              <section>
-                                <div class="row">
-                                  <div class="col-lg-12">
-                                    <div class="card mb-lg-0">         
-                                      <div class="card-header">
-                                        <h2 class="h6 mb-0 text-uppercase">Sender</h2>
+                                  <form class="form-horizontal" action="user_hoarding_permisson" method="post">
+                                    <div class="form-group row">
+                                      <label class="col-sm-2 form-control-label">From Date</label>
+                                      <div class="col-sm-1"> : </div>
+                                      <div class="col-md-3">
+                                        <input id="inputHorizontalSuccess" type="Date" placeholder="" class="form-control form-control-success"  name="start_date">
                                       </div>
-                                      <div class="card-body">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</div>
                                     </div>
-                                  </div>
-                                </div>
-                              </section>
-
-                              <section class="py-2"></section>
-
-                              <section>
-                                <div class="row">
-                                  <div class="col-lg-12">
-                                    <div class="card mb-lg-0">         
-                                      <div class="card-header">
-                                        <h2 class="h6 mb-0 text-uppercase">Sender</h2>
+                                    <div class="form-group row">
+                                      <label class="col-sm-2 form-control-label">To Date</label>
+                                      <div class="col-sm-1"> : </div>
+                                      <div class="col-md-3">
+                                        <input id="inputHorizontalWarning" type="Date" placeholder="" class="form-control form-control-warning"  name="end_date">
                                       </div>
-                                      <div class="card-body">Duis aute irure dolor in reprehenderit in voluptate velit esse
-                                          cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-                                          proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</div>
                                     </div>
-                                  </div>
-                                </div>
-                              </section>
-                            </div>
+                                    <div class="form-group row">       
+                                      <div class="col-md-9 ml-auto">
+                                        <input type="submit" value="Submit" class="btn btn-primary" >
+                                      
+                                      </div>
+                                    </div>
+                                  </form>
 
+                                </div>
+
+                              </div>
+                            </div>
+                            </div>
+           				  <button type="button" data-toggle="modal" data-target="#myModal1" class="btn-sm btn-info mx-3">Publicity Permission</button>
+                            <div id="myModal1" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
+                            <div role="document" class="modal-dialog modal-lg">
+                              <div class="modal-content">
+
+                                <div class="modal-header">
+                                  <h4 id="exampleModalLabel" class="modal-title">Event Name</h4>
+                                  <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true">×</span></button>
+                                </div>
+
+                                <div class="modal-body">
+                                  <p>Request for granting Publicity permission </p>
+
+                                  <form class="form-horizontal" action=#>
+                                    <div class="form-group row">
+                                      <label class="col-sm-2 form-control-label">From Date</label>
+                                      <div class="col-sm-1"> : </div>
+                                      <div class="col-md-3">
+                                        <input id="inputHorizontalSuccess" type="Date" placeholder="" class="form-control form-control-success">
+                                      </div>
+                                    </div>
+                                    <div class="form-group row">
+                                      <label class="col-sm-2 form-control-label">To Date</label>
+                                      <div class="col-sm-1"> : </div>
+                                      <div class="col-md-3">
+                                        <input id="inputHorizontalWarning" type="Date" placeholder="" class="form-control form-control-warning">
+                                      </div>
+                                    </div>
+                                    <div class="form-group row">       
+                                      <div class="col-md-9 ml-auto">
+                                       <button type="submit" value="submit_btn" class="btn btn-primary pull-right my-2" style="float:right;" name="submit"  id="submit_btn"> Submit</button> 
+                                      </div>
+                                    </div>
+                                  </form>
+
+                                </div>
+
+                              </div>
+                            </div>
+                            </div>
+                             </div>
+          		  <% 
+						}
+						else if( rs_1.getInt(5) == 2) {
+						
+                   %>
+           				  <button type="button" class="btn btn-primary disabled ">Proceed</button>
+           				  <%} else  { %>
+           				  
+           				  
+           				 	
+           				 	<button type="button" class="btn disabled">Proceed</button>
+           				 	
+           				  <%} %>
+					
+					
+                         
+                            
+                      </div>
+                    </div>
+
+
+                    </div>
+                  </div>
+
+                  <section class="py-2"></section>
+
+                  <div class="card">
+                    <div class="card-header">
+                      <h3 class="h6 text-uppercase mb-0">Messaging</h3>
+                    </div>
+
+                    <div class="card-body">
+                      <form action="user_to_principal_message" method="post">
+                        <br>
+                        <div class="form-group">
+                          <label>Message</label>
+                          <textarea type="textarea" class="form-control" style="height: 80px;" name="message"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                          <div class="row justify-content-right">
+                            <div class="col-10"></div>
+                            <div class="col-2">
+                              <input type="submit" value="Send" class="btn btn-primary">
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      </form>
 
-                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                      <button class="btn-sm btn-primary">Proceed</button>
+                     
+                       
+		<% 	
+			
+		                  		}while(!rs_1.next());
+		                  		
+		                     }
+		                  	
+		                  	catch(Exception ex)
+		                  	{
+		                  			//out.print(ex);
+		                  	}
+                  	
+          %>
+                      
+                      
+        <%
+			        
+			      	 st 		 = null;
+			    	 rs_1 		 = null;
+			    	
+            	
+          
+             	
+            	try
+            	{
+            		
+            		
+            		
+            		String sql_1 = "select message , communication_flag from event_communication where event_id = ? order by communication_number desc";
+            		
+            		String sql_2 = "select name from users where username  = ? ";
+            		
+            		String value = request.getParameter("btn");   // calling from DashBoard.java to this 
+            		
+            		String username =(String)session.getAttribute("username");
+            		
+            		if(value == null)
+            		{
+            			// calling from user_to_principal.java to this 
+            			
+            			/* ServletContext sc = request.getServletContext();
+            			value = (String)sc.getAttribute("event_id"); */
+            			
+            			value = (String)session.getAttribute("event_id_1");	
+            			
+            		}
+            		
+            		
+            		
+            		int id = Integer.parseInt(value);
+            		
+            		st = con.prepareStatement(sql_1);
+            		
+            		st.setInt(1, id);
+            		
+            		rs_1 = st.executeQuery();
+            		 
+            		st = null;
+            		
+            		st = con.prepareStatement(sql_2);
+            		
+            		st.setString(1 ,username);
+            		
+            		rs_2 = st.executeQuery();
+            		
+            		String event_id =null;
+            		
+/*             		session.setAttribute("event_id", value);
+ */            		
+ 					rs_2.next();
+            		
+            		while( rs_1.next() )
+            		{
+            	%>
+            	
+                      
+                      
+                      
+                      
+                        
+                     
+
+                      <section class="py-2"></section>
+
+                      <section>
+                        <div class="row">
+                          <div class="col-lg-12">
+                            <div class="card mb-lg-0">         
+                              <div class="card-header">
+                              <%
+                              	 if(rs_1.getInt(2) == 0)
+                              	 {
+                              %>
+                                <h2 class="h6 mb-0 text-uppercase"><%= rs_2.getString(1)  %></h2>
+                               <% 
+                               	 }
+                              	 else
+                              	 { 
+                               
+                               %> 
+                                 <h2 class="h6 mb-0 text-uppercase">Principal</h2>
+                                 <%} %>
+                              </div>
+                              <div class="card-body"><%= rs_1.getString(1)  %>.</div>
+                            </div>
+                            <% } %>
+                          </div>
+                        </div>
+                      </section>
 
                     </div>
                   </div>
@@ -250,7 +631,20 @@
             </div>
           </section>
         </div>
-
+        
+		<% 	
+			
+		                  		
+		                  		
+		
+		                     }
+		                  	
+		                  	catch(Exception ex)
+		                  	{
+		                  			out.print(ex);
+		                  	}
+                  	
+          %>
         <!-----Footer--------------------------------------------------------------------------------------------->
 
         <footer class="footer bg-white shadow align-self-end py-3 px-xl-5 w-100">
@@ -270,6 +664,8 @@
       </div>
     </div>
     <!-- JavaScript files-->
+  
+    
     <script src="vendor/jquery/jquery.min.js"></script>
     <script src="vendor/popper.js/umd/popper.min.js"> </script>
     <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
